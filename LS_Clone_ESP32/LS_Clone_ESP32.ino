@@ -3,18 +3,30 @@
 #include <BLEServer.h>
 #include <BLE2902.h>
 #include <SPI.h>
-#include "MAX17043.h"  //https://github.com/DFRobot/DFRobot_MAX17043
+#include "MAX17043.h"  //https://github.com/DFRobot/DFRobot_MAX17043  uses I2c to detect batteries current percentage - All lipo Battery fuel circuts use this chip this libary should work with most of them
 #include "Wire.h"
 
 /*
  * Notes
-MA_F = Motor A Forward CW
-MA_B = Motor A Backward CCW - Not Used
-MB_F = Motor B Forward CW
-MB_B = Motor B Backward CCW - Not Used
-MC_F = Motor C Forward CW
-MC_B = Motor C Backward CCW
+============Missing Features==============
+ an input form the Soft Power Switch by sparkfun to play preset Pattens on each press
+ or any Preset comands
+ 
+====Circuit Advice to make this as close to an Edge 2 For a Compact insertable Build without making a custom PCB========
+  Soft Power Switch by sparkfun https://www.sparkfun.com/products/17870
+  any ESP32 based Microcontroller e.g. https://www.dfrobot.com/product-1798.html
+  any PWM based Dual Motor Driver e.g. https://www.dfrobot.com/product-1492.html
+  any MAX17043 Based I2C lipo Battery Fuel Guage e.g. https://www.sparkfun.com/products/10617 (you can get this particular one on ebay cheaper & in bulk)
+  A lipo battery & charger  (A good Source for both of these with the added bonus of a built in 9v Boost Converter,
+  to run the motors off is recharagble 9v on ebay, But most ESP32 can't Handle 9v so you will need a Buck converter to lower the voltage to 5v/3.3v to power the esp32) 
+  Optional a boost/buck Converter - Boost the Voltage so the motors can run better, OR Buck/ dial back the voltage to run the ESP32 Correctly
+  2 DC ERM vibration motors
 
+==========Motor running functions=================
+MA_F = Motor A Forward CW
+MB_F = Motor B Forward CW
+MA_B = Motor A Backward CCW - Not Used - Keept for testing purposes eg will it function better if the 2 motors run in opisite directions
+MB_B = Motor B Backward CCW - Not Used - Keept for testing purposes
 */
 
 MAX17043 batteryMonitor;
@@ -36,16 +48,13 @@ int vibration;
 #define Device_Type            "P:37:FFFFFFFFFFFF;" // < only Needed if using with Official App
 #define Batch                  "220123;" //Date Created currently Set to my birthday day this year
 
+// Pin Settings Defaults Designed for FireBeetle Board ESP32-E by DFrobot https://www.dfrobot.com/product-2195.html
 //Vibration Motor A = All Lovense Have One
-const int MA_PWM=D2;  
-const int MA_DIR=D3;  
+const int MA_PWM=D9;  
+const int MA_DIR=D7;  
 //Vibration Motor B = Edge 2 Exclusive
-const int MB_PWM=D5;
-const int MB_DIR=D6;
-//Rotation Motor C = Nora Exclusive
-const int MC_PWM=D7;
-const int MC_DIR=D9;
-int CW = true;  //inital Rotation Direction if true CW if false Anti-Clockwise
+const int MB_PWM=D6;
+const int MB_DIR=D5;
 //END CONFIG
 
 
@@ -58,9 +67,6 @@ const int PWMFreq2 = 1000;
 const int PWM2 = 1;
 const int PWMResolution2 = 8;
 
-const int PWMFreq3 = 1000;
-const int PWM3 = 2;
-const int PWMResolution3 = 8;
 
 void MA_F(int SpeedA)
 {
@@ -86,19 +92,6 @@ void MB_B(int SpeedB)
     int SpeedB2=255-SpeedB;
     ledcWrite(PWM2,SpeedB2);
     digitalWrite(MB_DIR,HIGH);
-  }
-
-void MC_F(int SpeedC)
-{
-     ledcWrite(PWM3,SpeedC);
-     digitalWrite(MC_DIR,LOW);
-  }
-
-void MC_B(int SpeedC)
-{
-    int SpeedC2=255-SpeedC;
-    ledcWrite(PWM3,SpeedC2);
-    digitalWrite(MC_DIR,HIGH);
   }
 
 void VB (int Speed1) //shorcut to vibrate both motors at same time
@@ -479,208 +472,7 @@ class MySerialCallbacks: public BLECharacteristicCallbacks {
         memmove(messageBuf, "OK;", 3);
         pTxCharacteristic->setValue(messageBuf, 3);
         pTxCharacteristic->notify();
-        MB_F(255);
-// Nora Commands
-      } else if (rxValue == "RotateChange;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-          if ( CW == true ) {
-            CW = false;
-          } else if  ( CW == false ) {
-            CW = true;
-          }
-      }  else if (rxValue == "Rotate:0;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(0);
-          } else if  ( CW == false ) {
-            MC_B(0);
-          }
-      } else if (rxValue == "Rotate:1;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true  ) {
-           MC_F(13);
-          } else if  ( CW == false  ) {
-            MC_B(13);
-          }
-      } else if (rxValue == "Rotate:2;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(25);
-          } else if  ( CW == false  ) {
-            MC_B(25);
-          }
-      } else if (rxValue == "Rotate:3;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(38);
-          } else if  ( CW == false ) {
-            MC_B(38);
-          }
-      } else if (rxValue == "Rotate:4;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(51);
-          } else if  ( CW == false ) {
-            MC_B(51);
-          }
-      } else if (rxValue == "Rotate:5;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(64);
-          } else if  ( CW == false ) {
-            MC_B(64);
-          }
-      } else if (rxValue == "Rotate:6;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(76);
-          } else if  ( CW == false ) {
-            MC_B(76);
-          }
-      } else if (rxValue == "Rotate:7;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(89);
-          } else if  ( CW == true ) {
-            MC_B(89);
-          }
-      } else if (rxValue == "Rotate:8;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(102);
-          } else if  ( CW == false ) {
-            MC_B(102);
-          }
-      } else if (rxValue == "Rotate:9;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(115);
-          } else if  ( CW == false ) {
-            MC_B(115);
-          }
-      } else if (rxValue == "Rotate:10;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(127);
-          } else if  ( CW == false ) {
-            MC_B(127);
-          }
-      } else if (rxValue == "Rotate:11;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(140);
-          } else if  ( CW == false ) {
-            MC_B(140);
-          }
-      } else if (rxValue == "Rotate:12;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(153);
-          } else if  ( CW == false ) {
-            MC_B(153);
-          }
-      } else if (rxValue == "Rotate:13;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(166);
-          } else if  ( CW == false ) {
-            MC_B(166);
-          }
-      } else if (rxValue == "Rotate:14;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(178);
-          } else if  ( CW == false ) {
-            MC_B(178);
-          }
-      } else if (rxValue == "Rotate:15;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if (CW == true ) {
-           MC_F(191);
-          } else if  ( CW == false ) {
-            MC_B(191);
-          }
-      } else if (rxValue == "Rotate:16;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(204);
-          } else if  ( CW == false ) {
-            MC_B(204);
-          }
-      } else if (rxValue == "Rotate:17;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(217);
-          } else if  ( CW == false ) {
-            MC_B(217);
-          }
-      } else if (rxValue == "Rotate:18;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(229);
-          } else if  ( CW == false ) {
-            MC_B(229);
-          }
-      } else if (rxValue == "Rotate:19;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(242);
-          } else if  ( CW == false ) {
-            MC_B(242);
-          }
-      } else if (rxValue == "Rotate:20;") {
-        memmove(messageBuf, "OK;", 3);
-        pTxCharacteristic->setValue(messageBuf, 3);
-        pTxCharacteristic->notify();
-        if ( CW == true ) {
-           MC_F(255);
-          } else if  ( CW == false ) {
-            MC_B(255);
-          }
-      
-
+        MB_F(255);   
       }else {
         Serial.println("$Unknown request");        
         memmove(messageBuf, "ERR;", 4);
@@ -697,13 +489,10 @@ void setup() {
 
   ledcSetup(PWM1, PWMFreq1, PWMResolution1);
   ledcSetup(PWM2, PWMFreq2, PWMResolution2);
-  ledcSetup(PWM3, PWMFreq3, PWMResolution3);
   ledcAttachPin(MA_PWM, PWM1);
   ledcAttachPin(MB_PWM, PWM2);
-  ledcAttachPin(MC_PWM, PWM2);
   pinMode(MA_DIR, OUTPUT);
   pinMode(MB_DIR, OUTPUT);
-  pinMode(MC_DIR, OUTPUT);
 
   batteryMonitor.reset();
   batteryMonitor.quickStart();
