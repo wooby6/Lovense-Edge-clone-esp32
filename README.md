@@ -3,7 +3,7 @@ Lovense Edge clone designed for ESP32
 
 ============Missing Features==============
 
- an input form the Soft Power Switch by sparkfun to play preset Pattens on each press
+ an input from the Soft Power Switch circuit to play preset Pattens on each press
  or any Preset comands
  
 ====Circuit Advice to make this as close to an Edge 2 For a Compact insertable Build without making a custom PCB========
