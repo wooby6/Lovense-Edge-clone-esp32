@@ -3,7 +3,7 @@
 #include <BLEServer.h>
 #include <BLE2902.h>
 #include <SPI.h>
-#include "MAX17043.h"  //https://github.com/DFRobot/DFRobot_MAX17043  uses I2c to detect batteries current percentage - All lipo Battery fuel circuts use this chip this libary should work with most of them
+#include "DFRobot_MAX17043.h"  //https://github.com/DFRobot/DFRobot_MAX17043  uses I2c to detect batteries current percentage - All lipo Battery fuel circuts use this chip this libary should work with most of them
 #include "Wire.h"
 
 /*
@@ -29,7 +29,7 @@ MA_B = Motor A Backward CCW - Not Used - Keept for testing purposes eg will it f
 MB_B = Motor B Backward CCW - Not Used - Keept for testing purposes
 */
 
-MAX17043 batteryMonitor;
+DFRobot_MAX17043        gauge;
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pTxCharacteristic = NULL;
@@ -57,8 +57,7 @@ const int MB_PWM=D6;
 const int MB_DIR=D5;
 //END CONFIG
 
-
-
+float stateOfCharge = 69;
 const int PWMFreq1 = 1000;
 const int PWM1 = 0;
 const int PWMResolution1 = 8;
@@ -137,7 +136,6 @@ class MySerialCallbacks: public BLECharacteristicCallbacks {
         pTxCharacteristic->setValue(messageBuf, 18);
         pTxCharacteristic->notify();
       } else if (rxValue == "Battery;") {
-        float stateOfCharge = batteryMonitor.getSoC();
         memmove(messageBuf, "stateOfCharge;", 3);
         pTxCharacteristic->setValue(messageBuf, 3);
         pTxCharacteristic->notify();
@@ -494,8 +492,14 @@ void setup() {
   pinMode(MA_DIR, OUTPUT);
   pinMode(MB_DIR, OUTPUT);
 
-  batteryMonitor.reset();
-  batteryMonitor.quickStart();
+   while(gauge.begin() != 0) {
+    Serial.println("gauge begin faild!");
+    delay(2000);
+  }
+  delay(2);
+  Serial.println("gauge begin successful!");
+  //gauge.setInterrupt(32);  //use this to modify alert threshold as 1% - 32% (integer)
+}
   
   // Create the BLE Device
   BLEDevice::init("LVS-"); // CONFIGURATION: The name doesn't actually matter, The app identifies it by the reported id.
@@ -546,4 +550,5 @@ void loop() {
         // do stuff here on connecting
         oldDeviceConnected = deviceConnected;
     }
+ stateOfCharge = gauge.readPercentage();
 }
