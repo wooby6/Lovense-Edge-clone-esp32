@@ -4,28 +4,40 @@ My goal of this Project is to make a Custom Hismith Compatible Smart Vibrating D
 
 
 ==============WHAT’S DONE==============
-A Not Final Prototype Circuit
-	DFrobot Beetle ESP32 - C3
-	DFrobot HR8833 Thumbnail Sized DC Motor Driver 2x1.5A
-	SparkFun LiPo Fuel Gauge
-	TP4056 lipo charger
 
+A Not Final Prototype Circuit
+
+	DFrobot Beetle ESP32 - C3
+	
+	DFrobot HR8833 Thumbnail Sized DC Motor Driver 2x1.5A
+	
+	SparkFun LiPo Fuel Gauge
+	
+	TP4056 lipo charger
+	
 Most of the Code
 
-==============WHAT’S IN PROGRESS==============
-Circuit
-Power Switch
-Power Connector
+	All Vibrators Working, With Very Little Delay
+	BLE functioning & Connects To the Xtoys.app
 
+
+==============WHAT’S IN PROGRESS==============
+
+Circuit
+
+	Power Switch
+	Power Connector
 The Code 
-MAX17043 code isn’t Working
-Button Pressed Presets/ Patterns
+
+	MAX17043 code isn’t Working
+	Button Pressed Presets/ Patterns
 
 
 ==============TO DO==============
+
 Dildo Mould
+
 Electronics Housing Design to be 3d Printed
- 
 
 ===========Currently Missing Code Features==============
 
@@ -33,20 +45,21 @@ Electronics Housing Design to be 3d Printed
  or any Preset commands
  
 ====NOT FINALISED Recommended Circuit Parts========
+
 This is to make a compact Insertable device that is as close to an Edge 2 as possible without 
 making a custom PCB
 
-  Soft Power Switch by sparkfun https://www.sparkfun.com/products/17870
+1x Soft Power Switch by sparkfun https://www.sparkfun.com/products/17870
   
-  My code is currently optimised to work with the DFrobot Beetle ESP32 - C3 https://www.dfrobot.com/product-2566.html
+1x DFrobot Beetle ESP32 - C3 https://www.dfrobot.com/product-2566.html
   
-  this is the cheapest & smallest Production ESP32 I've found
+ My Code Has been Optimised to work with this Low Frequency but also cheap & small Production ESP32, It's the Smallest & Cheapest I've found
   
-  any PWM based Dual Motor Driver I recommend  https://www.dfrobot.com/product-1492.html
+1x DFrobot HR8833 Thumbnail Sized DC Motor Driver 2x1.5A   https://www.dfrobot.com/product-1492.html
   
-  SparkFun LiPo Fuel Gauge (you can get this particular one on eBay cheaper & in bulk)
+1x  SparkFun LiPo Fuel Gauge (you can get this particular one on eBay cheaper & in bulk)
   
-  A lipo battery  (A good Source for Small Batteries is a Li-ion rechargeable 9v you should be able to get these on eBay,  you get a bonus 9v Boost Converter 
+1x  A lipo battery at least 500mAh  (A good Source for Small Batteries is a Li-ion rechargeable 9v you should be able to get these on eBay,  you get a bonus dc-dc 9v Step-up  Circuit/ 9v Boost Converter
 Notice these batteries often come without protection Circuits, and the 9v boost converter can't be turned off without disconnecting the battery, so it will constantly drain it) 
 
  A lipo charger, A common & cheap one is the TP4056, and it has a protection circuit. 
@@ -55,4 +68,6 @@ Notice these batteries often come without protection Circuits, and the 9v boost 
  A boost Converter - Boost the Voltage of your battery, so the motors run correctly at low PWM (or lovense 10%, Vibrate:1;), this voltage is dependent on your motors
   
   2 DC ERM vibration motors
+
+
 
