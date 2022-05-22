@@ -11,6 +11,7 @@ Lovense Edge clone designed for ESP32
   Soft Power Switch by sparkfun https://www.sparkfun.com/products/17870
   
   any ESP32 based Microcontroller e.g. https://www.dfrobot.com/product-2195.html
+  Note: clock speed in important here so get one with a decent clock speed
   
   any PWM based Dual Motor Driver e.g. https://www.dfrobot.com/product-1492.html
   
