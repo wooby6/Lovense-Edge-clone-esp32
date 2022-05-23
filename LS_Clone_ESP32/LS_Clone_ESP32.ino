@@ -163,19 +163,21 @@ void setup() {
   Serial.println("Waiting a client connection to notify...");
 }
 void loop() {
+  if (!deviceConnected){
+        digitalWrite(LED,HIGH);
+        delay(1000);
+        digitalWrite(LED,LOW);
+        delay(1000);
+      } 
+      if (deviceConnected && !oldDeviceConnected) {
+        oldDeviceConnected = deviceConnected;
+        digitalWrite(LED,HIGH);
+    }
       if (!deviceConnected && oldDeviceConnected) {
         delay(100); // give the bluetooth stack the chance to get things ready
         pServer->startAdvertising(); // restart advertising
         Serial.println("start advertising");
         oldDeviceConnected = deviceConnected;
-        digitalWrite(LED,HIGH);
-        delay(1000);
         digitalWrite(LED,LOW);
-        delay(1000);
     }
-    if (deviceConnected && !oldDeviceConnected) {
-        oldDeviceConnected = deviceConnected;
-        digitalWrite(LED,HIGH);
-        delay(1000);
     }
-}
