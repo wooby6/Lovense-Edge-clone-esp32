@@ -3,50 +3,46 @@
 #include <BLEServer.h>
 #include <BLE2902.h>
 #include <SPI.h>
-#include "MAX17043.h" // https://porrey.github.io/max1704x/
+#include "DFRobot_MAX17043.h" // https://github.com/DFRobot/DFRobot_MAX17043
 #include "Wire.h"
-
 BLEServer* pServer = NULL;
 BLECharacteristic* pTxCharacteristic = NULL;
 BLECharacteristic* pRxCharacteristic = NULL;
+DFRobot_MAX17043        gauge;
 //CONFIG
-String bleAddress = "0082059AD3BD"; // CONFIGURATION: < Use the real device BLE address here.
-#define Device_Type            "P:37:0082059AD3BD;" // < only Needed if using with Official App
-#define Batch                  "220123;" //Date Created currently Set to my birthday day this year
-#define btname                 "LVS-"  // CONFIGURATION: keep it as LVS-  
+#define bleAddress "0082059AD3BD" // CONFIGURATION: < Use the real device BLE address here.
+#define Device_Type            "P:37:0082059AD3BD" // < Toy Type:FW Version:bleAdress
+#define Batch                  "220123" //Production Date, yymmdd, currently Set to my birthday day this year
+//pins
+#define LED  10
+#define MA_PWM   5  
+#define MA_DIR   4  
+#define MB_PWM   1
+#define MB_DIR   0
+// Don't touch these unless you know what you a doing
+#define btname                 "LVS-"  
 #define SERVICE_UUID           "50300001-0023-4bd4-bbd5-a6920e4c5653"
 #define CHARACTERISTIC_RX_UUID "50300002-0023-4bd4-bbd5-a6920e4c5653"
 #define CHARACTERISTIC_TX_UUID "50300003-0023-4bd4-bbd5-a6920e4c5653"
-//pins
-const int MA_PWM=0;  
-const int MA_DIR=1;  
-const int MB_PWM=4;
-const int MB_DIR=5;
 //END CONFIG
 
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 uint32_t value = 0;
 int vibration;
-float stateOfCharge = 69;
-const int PWMF = 1000;
-const int PWMR = 8;
-const int PWM1 = 0;
-const int PWM2 = 1;
-
 void V (int M)
 {
     int Speed = round(12.75*vibration);
     if (M == 1) {
-    ledcWrite(PWM1,Speed);
+    ledcWrite(1,Speed);
     digitalWrite(MA_DIR,LOW);
     } else if (M == 2){
-    ledcWrite(PWM2,Speed);
+    ledcWrite(2,Speed);
     digitalWrite(MB_DIR,LOW);
     } else {
-    ledcWrite(PWM1,Speed);
+    ledcWrite(1,Speed);
     digitalWrite(MA_DIR,LOW);
-    ledcWrite(PWM2,Speed);
+    ledcWrite(2,Speed);
     digitalWrite(MB_DIR,LOW);
     }
 }
@@ -76,13 +72,14 @@ class MySerialCallbacks: public BLECharacteristicCallbacks {
         Serial.println("*********");
       }
       if (rxValue == "DeviceType;") { 
-        // See CONFIG ^top
-        Serial.println("$Responding to Device Enquiry");
         memmove(messageBuf, Device_Type, 18);
         pTxCharacteristic->setValue(messageBuf, 18);
         pTxCharacteristic->notify();
       } else if (rxValue == "Battery;") {
-        memmove(messageBuf, "stateOfCharge;", 3);
+        char bat[3];
+        dtostrf(gauge.readPercentage(), 2,0, bat);
+        bat[3] = ';';
+        memmove(messageBuf, bat, 3);
         pTxCharacteristic->setValue(messageBuf, 3);
         pTxCharacteristic->notify();
       } else if (rxValue == "PowerOff;") {
@@ -117,7 +114,6 @@ class MySerialCallbacks: public BLECharacteristicCallbacks {
         vibration = std::atoi(rxValue.substr(9).c_str());
         V(2);
       }else {
-        Serial.println("$Unknown request");        
         memmove(messageBuf, "ERR;", 4);
         pTxCharacteristic->setValue(messageBuf, 4);
         pTxCharacteristic->notify();
@@ -129,30 +125,20 @@ void setup() {
   Serial.begin(115200);
 
   SPI.begin();
+  while(gauge.begin() != 0) {
+    Serial.println("gauge begin faild!");
+    delay(2000);
+  }
+  delay(2);
+  Serial.println("gauge begin successful!");
 
-  ledcSetup(PWM1, PWMF, PWMR);
-  ledcSetup(PWM2, PWMF, PWMR);
-  ledcAttachPin(MA_PWM, PWM1);
-  ledcAttachPin(MB_PWM, PWM2);
+  ledcSetup(1, 1000, 8);
+  ledcSetup(2, 1000, 8);
+  ledcAttachPin(MA_PWM, 1);
+  ledcAttachPin(MB_PWM, 2);
   pinMode(MA_DIR, OUTPUT);
   pinMode(MB_DIR, OUTPUT);
-
-if (FuelGauge.begin())
-  {
-    Serial.println("Resetting device...");
-    FuelGauge.reset();
-    delay(250);
-    Serial.println("Initiating quickstart mode...");
-    FuelGauge.quickstart();
-    delay(125);
-    Serial.print("Percent:       "); Serial.print(FuelGauge.percent()); Serial.println("%");
-  }
-  else
-  {
-    Serial.println("The MAX17043 device was NOT found.\n");
-    while (true);
-  }
-  
+  pinMode(LED,OUTPUT);
   BLEDevice::init(btname);
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
@@ -176,16 +162,20 @@ if (FuelGauge.begin())
   BLEDevice::startAdvertising();
   Serial.println("Waiting a client connection to notify...");
 }
-
 void loop() {
-    if (!deviceConnected && oldDeviceConnected) {
+      if (!deviceConnected && oldDeviceConnected) {
         delay(100); // give the bluetooth stack the chance to get things ready
         pServer->startAdvertising(); // restart advertising
         Serial.println("start advertising");
         oldDeviceConnected = deviceConnected;
+        digitalWrite(LED,HIGH);
+        delay(1000);
+        digitalWrite(LED,LOW);
+        delay(1000);
     }
     if (deviceConnected && !oldDeviceConnected) {
         oldDeviceConnected = deviceConnected;
+        digitalWrite(LED,HIGH);
+        delay(1000);
     }
-    stateOfCharge = FuelGauge.percent();
 }
