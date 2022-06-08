@@ -55,7 +55,7 @@ making a custom PCB
   
 1x DFrobot Beetle ESP32 - C3 https://www.dfrobot.com/product-2566.html
   
-	My Code Has been Optimised to work with this Low Frequency but also cheap & small Production ESP32, 
+	My Code Has been Optimised to work with this Low Frequency but also cheap & Tiny ESP32, 
 	It's the Smallest & Cheapest I've found
   
 1x DFrobot HR8833 Thumbnail Sized DC Motor Driver 2x1.5A   https://www.dfrobot.com/product-1492.html
