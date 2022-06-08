@@ -10,7 +10,7 @@ BLECharacteristic* pTxCharacteristic = NULL;
 BLECharacteristic* pRxCharacteristic = NULL;
 DFRobot_MAX17043        gauge;
 //CONFIG
-#define bleAddress "0082059AD3BD" // CONFIGURATION: < Use the real device BLE address here.
+#define bleAddress "0082059AD3BD" // CONFIGURATION: < Use a real Lovense Edge BLE address here or use a Genertate one using a MAC address generator
 #define Device_Type            "P:37:0082059AD3BD" // < Toy Type:FW Version:bleAdress
 #define Batch                  "220123" //Production Date, yymmdd, currently Set to my birthday day this year
 //pins
